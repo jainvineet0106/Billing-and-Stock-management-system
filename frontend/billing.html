@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panal</title>
+    <link rel="icon" href="assets/images/favicon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />   
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="assets/CSS/style.css">
+</head>
+<body>
+  <div class="sidebar" id="sidebar">
+    <h4 class="text-center mb-4">🛒 Admin Panel</h4>
+    <a href="#" class="" onclick="pywebchannel.open_dashboard()"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+    <a href="#" class="active" onclick="pywebchannel.open_billing()" ><i class="bi bi-wallet2 me-2"></i>Billing</a>
+    <a href="#" class="" onclick="pywebchannel.open_products()"><i class="bi bi-box-seam me-2"></i>Products</a>
+    <a href="#" class="" onclick="pywebchannel.open_customers()"><i class="bi bi-people me-2"></i>Customers</a>
+    <a href="#" class="" onclick="pywebchannel.open_settings()"><i class="bi bi-gear me-2"></i>Settings</a>
+    <a href="#" class="nav-link text-danger mt-3" onclick="pywebchannel.logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+  </div>
+  <div class="content" id="content_slide">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light rounded shadow-sm mb-4">
+      <div class="container-fluid">
+          <button class="btn btn-outline-secondary" id="toggle-btn">
+              <i class="bi bi-list"></i>
+          </button>
+      <span class="navbar-brand d-flex align-items-center gap-3">
+        <h2>Welcome,<span id="usernameDisplay"></span>!</h2>
+      </span>
+      </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Enter Customer Details</h5>
+                <form id="customerform">
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <label>Name</label>
+                            <input type="text" name="cust_name" class="form-control" required autofocus>
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Phone</label>
+                            <input type="text" name="cust_phone" class="form-control" required>
+                        </div>
+                    </div>
+                    <button type="submit" name="next" class="btn btn-primary mb-3">Next</button>
+                </form>
+
+                <div id="barcodefield" style="display: none; border: 1px dashed #ccc; padding: 15px; border-radius: 10px;">
+                    <select class="form-control mb-3" onchange="paymentmodefun()" id="paymentmode">
+                        <option selected disabled>Select Payment Mode</option>
+                        <option value="CASH">Cash</option>
+                        <option value="ONLINE">Online</option>
+                        <option value="CARD">Card</option>
+                    </select>  
+                    <div class="mb-3">
+                        <button onclick="keepFocus()" class="btn btn-primary d-flex align-items-center gap-2">
+                            <i class="bi bi-upc-scan"></i>Click to Scan/Enter Barcode
+                        </button>
+                        <input value="" type="text" class="form-control mt-3" id="barcodeInput" name="barcode" placeholder="Scan the barcode or enter the code"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Invoice -->
+        <div id="invoice-box" style="display: none; background: #fff;padding: 20px;border-radius: 10px;max-width: 600px;margin: auto;border: 1px solid #ccc;">
+            <div class="invoice-header" style="text-align: center;border-bottom: 2px solid #000;padding-bottom: 10px;margin-bottom: 15px;">
+                <h4 id="companyname" style="font-size: 24px; font-weight: bold; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
+                </h4>
+                <p>
+                    <span id="companyaddress"></span><br>
+                    Phone: <span id="companymobile"></span><br>
+                    Email: <span id="companyemail"></span><br><br>
+                    <small>REGISTER UNDER COMPOSITION SCHEME</small>
+                </p>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 0.5rem;">
+                <tr>
+                    <td>
+                        <strong>Customer:</strong> <span id="cust_name"></span><br>
+                        <strong>Mobile:</strong> <span id="cust_phone"></span><br>
+                        <strong>Payment Mode:</strong> <span id="paymode"></span><br>
+                    </td>
+                    <td style="width: 50%; text-align: right; vertical-align: top;">
+                        <strong>Bill No:</strong> <span id="billno"></span><br>
+                        <strong>Date:</strong> <span id="billdate"></span><br>
+                        <strong>Time:</strong> <span id="billtime"></span>
+                    </td>
+                </tr>
+            </table>
+            <hr>
+            <table id="productTable" style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+                <thead>
+                    <tr>
+                        <th style="padding: 4px; text-align: center;">S</th>
+                        <th style="padding: 4px; text-align: left;">Description</th>
+                        <th style="padding: 4px; text-align: center;">Qty</th>
+                        <th style="padding: 4px; text-align: right;">Rate</th>
+                        <th style="padding: 4px; text-align: right;">Amt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <hr>
+            <div style="width: 50%; margin-left: 300px; margin-top: 10px;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+                    <tr>
+                        <td style="width: 66.6667%; text-align: right; padding: 4px;">
+                            <strong>SUB TOTAL</strong>
+                        </td>
+                        <td id="subtotal" style="width: 33.3333%; text-align: right; padding: 4px;">
+                            00.00
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 66.6667%; text-align: right; padding: 4px;">
+                            <strong>Dis Amt</strong>
+                        </td>
+                        <td id="disamt" style="width: 33.3333%; text-align: right; padding: 4px;">
+                            <input type="number" id="disamtvalue" onchange="discount()" value="0">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 66.6667%; text-align: right; padding: 4px;">
+                            <strong>G. TOTAL</strong>
+                        </td>
+                        <td id="gtotal" style="width: 33.3333%; text-align: right; padding: 4px; font-weight: bold;">
+                            ₹ 00.00
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div style="width: 100%;">
+                <p style="margin-top: 1rem;">
+                    <strong>Rs.</strong> <span id="inwords"></span>
+                </p>
+
+                <p id="terms">
+                </p>
+            </div>
+            <p><strong>Fixed Rate</strong></p>
+
+            <div style="text-align: center;margin-top: 20px;font-style: italic;">
+                <p>!!! Thanks !!! Visit Again !!!</p>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-sm" style="float: right;" 
+        onclick="customerupdate(
+            document.getElementById('cust_name').innerText,
+            document.getElementById('cust_phone').innerText,
+            document.getElementById('billno').innerText,
+            document.getElementById('billdate').innerText,
+            document.getElementById('billtime').innerText
+        )">
+            Print Invoice
+        </button>
+
+    </div>
+  </div>
+  <footer class="bg-dark text-white text-center py-4">
+    <p class="mb-0">&copy; 2025 Billing and Stock management. All rights reserved. Designed by Vineet Jain.</p>
+  </footer>
+
+    <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+    <script>
+          new QWebChannel(qt.webChannelTransport, function(channel) {
+            window.pywebchannel = channel.objects.pywebchannel;
+            document.getElementById("customerform").addEventListener("submit", function(e){
+                e.preventDefault();
+                let cust_name = this.cust_name.value;
+                let cust_phone = this.cust_phone.value;
+                document.getElementById('cust_name').innerText = cust_name;
+                document.getElementById('cust_phone').innerText = cust_phone;
+
+                const newFields = document.getElementById('barcodefield');
+                const invoice_box = document.getElementById('invoice-box');
+                if (newFields.style.display === "none") {
+                    newFields.style.display = "block";
+                    invoice_box.style.display = "block";
+                    newFields.removeAttribute("autofocus");
+                    document.getElementById('paymentmode').focus();
+                } else {
+                    newFields.style.display = "none";
+                    invoice_box.style.display = "none";
+                }
+            });
+        });
+    </script>
+    <script>
+        function getFormattedDateTime() {
+            let now = new Date();
+            // Date format (DD-MM-YYYY)
+            let day = String(now.getDate()).padStart(2, '0');
+            let month = String(now.getMonth() + 1).padStart(2, '0');
+            let year = now.getFullYear();
+            let date = `${day}-${month}-${year}`;
+
+            // Time format (hh:mm AM/PM)
+            let hours = now.getHours();
+            let minutes = String(now.getMinutes()).padStart(2, '0');
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 0 ko 12 banado
+            let time = `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+
+            return { date, time };
+        }
+    </script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const companyname = urlParams.get('companyname');
+        const username = urlParams.get('username');
+        const email = urlParams.get('email');
+        const mobile = urlParams.get('mobile');
+        const address = urlParams.get('address');
+        const terms = urlParams.get('terms');
+        const billno = urlParams.get('billno');
+        let termsArray = terms ? terms.split('\n') : [];
+        document.getElementById('usernameDisplay').innerText = companyname;
+        document.getElementById('companyname').innerText = companyname;
+        document.getElementById('companyaddress').innerText = address;
+        document.getElementById('companymobile').innerText = mobile;
+        document.getElementById('companyemail').innerText = email;
+        document.getElementById('billno').innerText = billno;
+        document.getElementById('billdate').innerText = getFormattedDateTime().date;
+        document.getElementById('billtime').innerText = getFormattedDateTime().time;
+
+        let termsContainer = document.getElementById('terms');
+        termsContainer.innerHTML += "<strong>Terms & Conditions:</strong><br>";
+        for(let i=0; i < termsArray.length; i++) {
+            termsContainer.innerHTML += i+1 + ". " + "<span>" + termsArray[i].replace('#', '&') + ".</span><br>";
+        }
+    </script>
+    
+    <script>
+        function numberToWords(num) {
+            const a = [
+                '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+                'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen',
+                'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'
+            ];
+            const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+            function inWords(n) {
+                if (n < 20) return a[n];
+                if (n < 100) return b[Math.floor(n / 10)] + (n % 10 ? " " + a[n % 10] : "");
+                if (n < 1000) return a[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " " + inWords(n % 100) : "");
+                if (n < 100000) return inWords(Math.floor(n / 1000)) + " Thousand" + (n % 1000 ? " " + inWords(n % 1000) : "");
+                if (n < 10000000) return inWords(Math.floor(n / 100000)) + " Lakh" + (n % 100000 ? " " + inWords(n % 100000) : "");
+                return inWords(Math.floor(n / 10000000)) + " Crore" + (n % 10000000 ? " " + inWords(n % 10000000) : "");
+            }
+
+            return inWords(num);
+        }
+
+        function paymentmodefun(){
+            let mode = document.getElementById("paymentmode").value;
+            let paymodes = document.getElementById("paymode");
+            paymodes.innerText = mode;
+            keepFocus()
+        }
+        function keepFocus(){
+            document.getElementById("barcodeInput").focus();
+        }
+
+        function discount(){
+            disamtvalue = document.getElementById("disamtvalue").value;
+            let gtotals = document.getElementById('gtotal');
+            let gtotal = (parseFloat(subtotal) - parseFloat(disamtvalue)).toFixed(2)
+            gtotals.innerText = "Rs."+gtotal;
+            let inwords = document.getElementById('inwords');
+            inwords.innerText = numberToWords(gtotal) + " Only";
+        }
+
+        let barcodeInput = document.getElementById("barcodeInput");
+        let i = 0;
+        let subtotal = 0;
+        let disamt = 0;
+
+        barcodeInput.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                let code = barcodeInput.value.trim();
+                if (code !== "") {
+                    pywebchannel.get_product_by_code(code).then(product => {
+                        let tbody = document.querySelector("#productTable tbody");
+                        if(product.length != 0){
+                            product.forEach(element => {
+                                let tr = document.getElementsByClassName("productsrow");
+                                let found = false;
+                                let qty = 1;
+                                Array.from(tr).forEach(pdt => {
+                                    let name = pdt.getElementsByClassName('name')[0];
+                                    let amount = pdt.getElementsByClassName('amount')[0];
+                                    let quantity = pdt.getElementsByClassName("qtyvalue")[0];
+                                    let total = pdt.getElementsByClassName("total")[0];
+                                    if(name.innerText ==  element[2] && amount.innerText == element[3])
+                                    {
+                                        qty = parseInt(quantity.innerText);
+                                        quantity.innerText = ++qty;
+                                        total.innerText = (parseFloat(element[3]) * qty).toFixed(2);
+                                        found = true;
+                                        subtotal = parseFloat(subtotal) + parseFloat(element[3]);
+                                    }
+                                });
+                                if(!found){
+                                    let row = `
+                                        <tr class="productsrow">
+                                        <td style="padding: 4px; text-align: center; display: none;" class = "id">${element[0]}</td>
+                                        <td style="padding: 4px; text-align: center;">${++i}</td>
+                                        <td style="padding: 4px; text-align: left;" class = "name">${element[2]}</td>
+                                        <td style="padding: 4px; text-align: center;" class = "qtyvalue">
+                                            ${qty}
+                                        </td>
+                                        <td style="padding: 4px; text-align: right;" class = "amount">${element[3]}</td>
+                                        <td style="padding: 4px; text-align: right;" class = "total">${(parseFloat(element[3])).toFixed(2)}</td>
+                                        </tr>
+                                        `;
+                                    tbody.innerHTML += row;
+                                    subtotal = parseFloat(subtotal) + parseFloat(element[3]);
+                                }
+                            });
+                        }else{
+                            alert("Product not found");
+                        }
+                        barcodeInput.value = "";
+                        let subtotals = document.getElementById('subtotal');
+                        subtotals.innerText = (parseFloat(subtotal)).toFixed(2);
+                        let disamts = document.getElementById('disamtvalue');
+                        disamt = disamts.value;
+                        let gtotals = document.getElementById('gtotal');
+                        let gtotal = (parseFloat(subtotal) - parseFloat(disamt)).toFixed(2)
+                        gtotals.innerText = "Rs."+gtotal;
+                        let inwords = document.getElementById('inwords');
+                        inwords.innerText = numberToWords(gtotal) + " Only";
+                        keepFocus();
+                    });
+                }
+                e.preventDefault();
+            }
+        });
+
+        function customerupdate(name,mobile,no,date,time){
+            let items = [];
+            let pay = document.getElementById("paymode");
+            payvalue = pay.innerText;
+            
+            if(payvalue == ""){
+                alert("Select Payment Mode");
+                document.getElementById("paymentmode").focus();
+                return
+            }
+            
+            let tr = document.getElementsByClassName("productsrow");
+            Array.from(tr).forEach(element => {
+                let rowData = [];
+                let id = element.getElementsByClassName('id')[0];
+                let quantity = element.getElementsByClassName("qtyvalue")[0];
+                let name = element.getElementsByClassName("name")[0];
+                
+                rowData.push(id.innerText);
+                rowData.push(quantity.innerText);
+                rowData.push(name.innerText);
+                
+                items.push(rowData);
+            });
+            Array.from(tr).forEach(element => {
+                element.querySelectorAll(".id").forEach(el => el.remove());
+            });
+            
+            let dis = document.getElementById("disamtvalue").value;
+            let discount = document.getElementById('disamt');
+            discount.innerHTML = dis;
+
+            let gtotal = document.getElementById('gtotal').innerText;
+            
+            if(items.length != 0){
+                pywebchannel.update_customer(no, name, mobile, payvalue, date, time, items, subtotal, dis, gtotal).then(response => {
+                    if (response.status == "success") {
+                        let printContents = document.getElementById("invoice-box").innerHTML;
+                        pywebchannel.print_invoice(printContents);
+                    }
+                    else{
+                        dis = parseInt(dis);
+                        let discountvalue = document.getElementById('disamt');
+                        discountvalue.innerHTML = `<input type="number" id="disamtvalue" onchange="discount()" value="${dis}">`;
+                        
+                    }
+                });
+            }
+            else{
+                alert("Please Scan Products");
+                let discountvalue = document.getElementById('disamt');
+                discountvalue.innerHTML = '<input type="number" id="disamtvalue" onchange="discount()" value="0">';
+                keepFocus();
+            }
+        }
+        function clearInvoiceData() {
+            document.getElementById("customerform").reset();
+            document.getElementById("barcodeInput").value = "";
+            document.querySelector("#productTable tbody").innerHTML = "";
+            subtotal = 0;
+            disamt = 0;
+            i = 0;
+            document.getElementById('invoice-box').style.display = "none";
+            document.getElementById('barcodefield').style.display = "none";
+        }
+
+    </script>
+</body>
+</html>
